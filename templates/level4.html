@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Feed</title>
 </head>
 <body>
-<img src=//file/pic.png alt="image">
+<img src=/files/image.jpg width="160" height="120" alt="image">
+<form method="post">
+    {% csrf_token %}
+    <label for="code">code:</label>
+    <input type="text" name="code" id="code">
+    <input type="submit">
+</form>
 </body>
 </html>

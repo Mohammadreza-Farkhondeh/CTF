@@ -1,9 +1,11 @@
-import django.views.decorators.csrf
 import jwt
+from django.http import Http404
 from django.shortcuts import render, HttpResponse, redirect
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import os
 
 
 def level1(request):
@@ -32,17 +34,22 @@ def level1(request):
 def level3(request):
     cookie_a = request.COOKIES.get('A')
     cookie_b = request.COOKIES.get('B')
-
-    if cookie_a == '356a192b7913b04c54574d18c28d46e6395428ab' and \
-            cookie_b == 'd033e22ae348aeb5660fc2140aec35850c4da997':
-        if request.method == "POST":
-            secret = request.POST.get("secret")
-            if secret == "opp3nh3im3r":
-                return redirect(reverse('level4'))
-        elif request.method == "GET":
-            return render(request, 'index.html')
+    if not (cookie_a and cookie_b):
+        return HttpResponse("<a href='/login'>login</a> required")
     else:
-        return HttpResponse("Access denied. Cookies A and B do not match expected values.", status=401)
+        if cookie_a == '356a192b7913b04c54574d18c28d46e6395428ab' and \
+                cookie_b == 'd033e22ae348aeb5660fc2140aec35850c4da997':
+            if request.method == "POST":
+                secret = request.POST.get("secret")
+                if secret == "opp3nh3im3r":
+                    response = redirect(reverse('level4'))
+                    response.delete_cookie("A")
+                    response.delete_cookie("B")
+                    return response
+            elif request.method == "GET":
+                return render(request, 'index.html')
+        else:
+            return HttpResponse("Access denied. Cookies A and B do not match expected values.", status=401)
 
 
 def level4(request):
@@ -60,14 +67,11 @@ def level5(request):
     if request.method == 'GET':
         user_name = request.GET.get('name')
         if user_name:
-            if 'iframe' in user_name or 'src=' in user_name:
-                if 'file:///etc/passwd' in user_name:
-                    return redirect('level6')
-                else:
-                    return HttpResponse("Access denied. Invalid 'name' parameter.", status=401)
+            if 'file:///etc/passwd' in user_name:
+                return HttpResponse(reverse('level6'))
             else:
-                # Render an HTML page that says "Hi {name}"
                 return render(request, 'level5.html', {'user_name': user_name})
+
         else:
             return HttpResponse("Missing 'name' parameter. Please provide a 'name'.", status=400)
     else:
@@ -77,12 +81,9 @@ def level5(request):
 def level6(request):
     if 'HTTP_HOST' in request.META and request.META['HTTP_HOST'] == 'localhost':
         # Check if the request includes the expected header
-        return HttpResponse("/CH3rN08Y1")
+        return HttpResponse(reverse("level7"))
     else:
-        return HttpResponse("""Only Accessible from local <!--<?php\n if ($_SERVER['HTTP_HOST'] !== 'localhost')
-         {\n\thttp_response_code(403); // Forbidden\n\techo "Only Accessible from local";
-         \n\t exit;\n}\necho "/<censored>"\n?>-->""",
-                            status=403)
+        return HttpResponse("Only Accessible from local", status=403)
 
 
 def level7(request):
@@ -131,11 +132,12 @@ def level7(request):
 def level8(request):
     if 'HTTP_IF_MATCH' in request.META:
         if request.META['HTTP_IF_MATCH'] == 'admin':
-            return HttpResponse("/5H3r10CK", content_type='text/plain')
+            return HttpResponse(reverse("level9"))
         else:
             return HttpResponse("Nice Shot but not enough", content_type='text/plain')
     else:
         return HttpResponse("<strong>If</strong> you were <strong>Match</strong> the admin user", content_type='text/html')
+
 
 @csrf_exempt
 def level9(request):
@@ -143,3 +145,28 @@ def level9(request):
         return HttpResponse("/4rC4N3", content_type='text/plain')
     else:
         return HttpResponse("Retrieve my properties from my WebDAV", content_type='text/plain')
+
+
+def files(request, filename=None):
+    files_dir = os.path.join(settings.BASE_DIR, 'files')
+
+    if filename:
+        file_path = os.path.join(files_dir, filename)
+        print(file_path)
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as file:
+                response = HttpResponse(file.read(), content_type='application/octet-stream')
+            return response
+        else:
+            raise Http404("File not found")
+
+    files_in_files = os.listdir(files_dir)
+
+    file_list = "<ul>"
+    for name in files_in_files:
+        file_list += f"<li><a href='/files/{name}'>{name}</a></li>"
+    file_list += "</ul>"
+
+    context = {'file_list': file_list}
+
+    return render(request, "files.html", context)

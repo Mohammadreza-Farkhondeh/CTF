@@ -7,16 +7,12 @@ SECRET_KEY = 'django-insecure-xha_ntn@kuc)e4!zoetxxy084uyzm*=10_t8l2qfu=f@y5i&fn
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
     'app',
 ]
 
@@ -83,6 +79,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/files/'
+MEDIA_URL = '/files/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
