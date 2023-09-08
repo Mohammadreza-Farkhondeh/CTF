@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Level 1 - JWT Login</title>
+</head>
+<body>
+
+    <h1>Login Page</h1>
+    <form method="POST" action="">
+        {% csrf_token %}
+        <!-- username: "m7arm4n"-->
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Username:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- <?
+
+include "includes/secret.inc";
+
+    if(array_key_exists("submit", $_POST)) {
+        if($secret == $_POST['secret']) {
+        // redirect to next level;
+    } else {
+        print "Wrong secret";
+    }
+    }
+?> -->
+<form method="post">
+    {% csrf_token %}
+    <label for="secret">secret:</label>
+    <input type="text" name="secret" id="secret">
+    <input type="submit">
+</form>
+</body>
+</html>
